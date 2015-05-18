@@ -1,11 +1,11 @@
 playCount = 0
+turn = True
 FIELD = 8
 cells = [[0 for i in range(FIELD)]for j in range(FIELD)]
+puttable = 0
 black = 0
 white = 0
-
-
-log=[]
+log = []
 
 def setup():
     size(480, 480)
@@ -15,23 +15,32 @@ def setup():
     cells[4][3] = 2
     cells[4][4] = 1
 
-
 def draw():
-    
     global playCount
+    global puttable
+    global turn
     black = 0
     white = 0
-    
+
+    puttable = 0
     background(0, 100, 0)
     stroke(0)
     noFill()
     rect(0, 0, 480, 480)
-    
-   
+
     for i in range(1, 9):
         line(i * 60, 0, i * 60, height)
         line(0, i * 60, width - 160, i * 60)
+    for i in range(FIELD):
+        for j in range(FIELD):
+            if canPut(i,j):
+                puttable += 1
 
+    drawingBoard()
+    judgeGame()
+
+
+def drawingBoard():
     for i in range(FIELD):
         for j in range(FIELD):
             if cells[i][j] == 1:
@@ -47,22 +56,28 @@ def draw():
                 stroke(0)
                 rect(i * 60, j * 60, 60, 60)
             if canPut(i, j):
-                
+
                 fill(0, 255, 0)
                 stroke(0)
                 rect(i * 60, j * 60, 60, 60)
-                
-            if playCount!=0:
-                noFill();
-                stroke(255,0,0)
-                rect(log[playCount-1][0]*60,log[playCount-1][1]*60,60,60)
-    
+            if playCount != 0:
+                noFill()
+                stroke(255, 0, 0)
+                rect(log[playCount - 1][0] * 60,
+                     log[playCount - 1][1] * 60, 60, 60)
 
-    
-    judgeGame()
 
 def judgeGame():
+    global black
+    global white
     if playCount == 60:
+        for i in range(FIELD):
+            if j in range(FIELD):
+                if cells[i][j] == 1:
+                    black += 1
+                elif cells[i][j] == 2:
+                    white += 1
+
         if black > white:
             print "Black WIN"
         elif white > black:
@@ -74,20 +89,21 @@ def judgeGame():
 def countStone():
     global black
     global white
-    black=0
-    white=0
+    black = 0
+    white = 0
     for i in range(FIELD):
         for j in range(FIELD):
             if cells[i][j] == 1:
                 black += 1
             if cells[i][j] == 2:
                 white += 1
-    print "black "+str(black)
-    print "white "+str(white)
-
+    print "black " + str(black)
+    print "white " + str(white)
 
 def mousePressed():
     global playCount
+    global turn
+
 
     if mouseX <= 480:
         for i in range(FIELD):
@@ -98,14 +114,16 @@ def mousePressed():
 
                             putStone(i, j)
                             reverseStone(i, j)
-                            log.append((i,j))
+                            log.append((i, j))
+
+                            turn = not turn
 
                             playCount += 1
 
 
 def putStone(_posX, _posY):
 
-    if playCount % 2 == 0:
+    if turn:
         cells[_posX][_posY] = 1
     else:
         cells[_posX][_posY] = 2
@@ -131,11 +149,12 @@ def reverseStone(_posX, _posY):
         reverse(_posX, _posY, 1, 1)
 
 def reverse(_posX, _posY, _vecX, _vecY):
-    
+
     global playCount
+    global turn
     putStone = 0
-    
-    if playCount % 2 == 0:
+
+    if turn:
         putStone = 1
     else:
         putStone = 2
